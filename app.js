@@ -1,13 +1,22 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const app = express();
-const port = 5000;
-app.use(bodyParser.json());
-const reader = require("xlsx");
+const multer = require('multer');
+const cors = require('cors');
 
-app.post('/excel', async (req, res) => {
+const { getHeadersBySheet } = require('./helpers');
+
+const port = 5000;
+const app = express();
+app.use(bodyParser.json());
+app.use(cors());
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+app.post('/excel', upload.single('file'), async (req, res) => {
   try {
-    res.send('Schema');
+    const headersBySheet = getHeadersBySheet(req.file);
+    res.json(headersBySheet);
   }
   catch (error) {
     console.error('Error parsing excel:', error.message);
