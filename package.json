@@ -1,0 +1,27 @@
+{
+  "name": "be-sharp-mail-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gerry004/be-sharp-mail-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gerry004/be-sharp-mail-api/issues"
+  },
+  "homepage": "https://github.com/gerry004/be-sharp-mail-api#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.9",
+    "nodemon": "^3.0.3",
+    "xlsx": "^0.18.5"
+  }
+}
