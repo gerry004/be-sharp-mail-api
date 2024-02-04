@@ -13,23 +13,35 @@ const transporter = nodemailer.createTransport({
 
 const delay = async (ms = 1000) => new Promise(resolve => setTimeout(resolve, ms))
 
-const sendEmail = async (sender, recipient, subject, message) => {
+const sendEmail = async (recipient, subject, message) => {
   const mailOptions = {
-    from: sender,
-    to: recipient,
+    from: '"B# Piano Competition" team@besharppiano.ie',
+    to: "gerry04y@gmail.com",
     subject: subject,
-    text: message
+    html: message
   };
-
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log('Email Successfully Sent to ' + addressee);
-    }
-  });
+  console.log(mailOptions);
+  // transporter.sendMail(mailOptions, (error, info) => {
+  //   if (error) {
+  //     console.log(error);
+  //   } else {
+  //     console.log('Email Successfully Sent to ' + recipient);
+  //   }
+  // });
 
   await delay(1000)
+}
+
+
+const constructMessageFromHtml = (message, excelSheetData) => {
+  updatedMessage = replacePlaceholders(message, excelSheetData);
+  return updatedMessage;
+}
+
+function replacePlaceholders(html, data) {
+  return html.replace(/{{([^}]+)}}/g, function (match, key) {
+    return data.hasOwnProperty(key) ? data[key] :'';
+  });
 }
 
 const getHeadersBySheet = (file) => {
@@ -60,4 +72,4 @@ const getSheetHeaders = (sheet) => {
   return headers;
 };
 
-module.exports = { sendEmail, getHeadersBySheet };
+module.exports = { sendEmail, getHeadersBySheet, constructMessageFromHtml };

@@ -2,8 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const cors = require('cors');
+const reader = require('xlsx');
 
-const { getHeadersBySheet } = require('./helpers');
+const { getHeadersBySheet, constructMessageFromHtml, sendEmail } = require('./helpers');
 
 const port = 5000;
 const app = express();
@@ -23,9 +24,19 @@ app.post('/excel', upload.single('file'), async (req, res) => {
   }
 });
 
-app.post('/email', async (req, res) => {
+app.post('/email', upload.single('file'), async (req, res) => {
   try {
-    res.send('Email');
+    const excel = await reader.read(req.file.buffer);
+    const recipientEmail = req.body.recipientEmail;
+    const message = req.body.message;
+    const selectedSheet = req.body.selectedSheet;
+    const json = reader.utils.sheet_to_json(excel.Sheets[selectedSheet]);
+
+    for (let i = 0; i < json.length; i++) {
+      const updatedMessage = constructMessageFromHtml(message, json[i]);
+      sendEmail(json[i][recipientEmail], 'B# Piano Competition', updatedMessage);
+    }
+    res.json(updatedMessage);
   }
   catch (error) {
     console.error('Error sending email:', error.message);
