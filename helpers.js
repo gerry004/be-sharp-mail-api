@@ -7,7 +7,7 @@ const transporter = nodemailer.createTransport({
   secure: true,
   auth: {
     user: 'team@besharppiano.ie',
-    pass: 'Oobleck!23'
+    pass: process.env.EMAIL_PASSWORD
   }
 });
 
