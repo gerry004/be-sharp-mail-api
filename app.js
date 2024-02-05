@@ -16,30 +16,60 @@ const upload = multer({ storage: storage });
 
 app.post('/excel', upload.single('file'), async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
     const headersBySheet = getHeadersBySheet(req.file);
+    if (!headersBySheet) {
+      return res.status(400).json({ error: 'Invalid file format or no headers found.' });
+    }
+
     res.json(headersBySheet);
-  }
-  catch (error) {
-    console.error('Error parsing excel:', error.message);
+  } catch (error) {
+    console.error('Error processing file:', error);
+    res.status(500).json({ error: 'Internal Server Error. Please try again later.' });
   }
 });
 
 app.post('/email', upload.single('file'), async (req, res) => {
   try {
-    const excel = await reader.read(req.file.buffer);
-    const recipientEmail = req.body.recipientEmail;
-    const message = req.body.message;
-    const selectedSheet = req.body.selectedSheet;
-    const json = reader.utils.sheet_to_json(excel.Sheets[selectedSheet]);
-
-    for (let i = 0; i < json.length; i++) {
-      const updatedMessage = constructMessageFromHtml(message, json[i]);
-      sendEmail(json[i][recipientEmail], 'B# Piano Competition', updatedMessage);
+    const { selectedSheet, recipientEmailExcelColumn, subject, messageHtml, type, testRecipientEmail } = req.body;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded.' });
     }
-    res.json(updatedMessage);
+    if (!selectedSheet || !recipientEmailExcelColumn || !subject || !messageHtml || !type) {
+      return res.status(400).json({ error: 'Bad Request' });
+    }
+
+    const workbook = reader.read(req.file.buffer);
+    const sheet = workbook.Sheets[selectedSheet];
+    const sheetJson = reader.utils.sheet_to_json(sheet);
+
+    if (type === "preview") {
+      const updatedMessageHtml = constructMessageFromHtml(messageHtml, sheetJson[0]);
+      res.json({
+        selectedSheet,
+        recipientEmailExcelColumn,
+        subject,
+        updatedMessageHtml
+      });
+    } else if (type === "test") {
+      const updatedMessageHtml = constructMessageFromHtml(messageHtml, sheetJson[0]);
+      sendEmail(testRecipientEmail, subject, updatedMessageHtml);
+      res.json("Test Email Successfully Sent!");
+    } else {
+      for (let i = 0; i < sheetJson.length; i++) {
+        const updatedMessage = constructMessageFromHtml(messageHtml, sheetJson[i]);
+        sendEmail(sheetJson[i][recipientEmailExcelColumn], subject, updatedMessage);
+      }
+      res.json("Emails Successfully Sent!");
+    }
   }
   catch (error) {
-    console.error('Error sending email:', error.message);
+    console.error('Error sending emails:', error);
+    return res.status(500).json({ error: 'Internal Server Error. Please try again later.' });
   }
 });
 

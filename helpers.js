@@ -16,22 +16,21 @@ const delay = async (ms = 1000) => new Promise(resolve => setTimeout(resolve, ms
 const sendEmail = async (recipient, subject, message) => {
   const mailOptions = {
     from: '"B# Piano Competition" team@besharppiano.ie',
-    to: "gerry04y@gmail.com",
+    to: recipient,
     subject: subject,
     html: message
   };
-  console.log(mailOptions);
-  // transporter.sendMail(mailOptions, (error, info) => {
-  //   if (error) {
-  //     console.log(error);
-  //   } else {
-  //     console.log('Email Successfully Sent to ' + recipient);
-  //   }
-  // });
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Email Successfully Sent to ' + recipient);
+    }
+  });
 
   await delay(1000)
 }
-
 
 const constructMessageFromHtml = (message, excelSheetData) => {
   updatedMessage = replacePlaceholders(message, excelSheetData);
